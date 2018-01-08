@@ -1,3 +1,4 @@
+require 'real_savvy/meta'
 require 'real_savvy/resource'
 
 class RealSavvy::Document
@@ -34,7 +35,7 @@ class RealSavvy::Document
   end
 
   def meta
-    @meta ||= document['meta'] || {}
+    @meta ||= RealSavvy::Meta.new(document['meta'] || {})
   end
 
   def errors

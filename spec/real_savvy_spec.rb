@@ -114,12 +114,20 @@ RSpec.describe RealSavvy do
   context 'document' do
     it 'are structed correctly' do
       document = client.collections.index
+      expect(document.meta).to be_a(RealSavvy::Meta)
+
       collection = document.results[0]
       expect(collection).to be_a(RealSavvy::Resource::Collection)
+
       expect(collection.relationships.user).to be_a(RealSavvy::Resource::User)
       expect(collection.relationships.collaborators).to be_a(Array)
+
       expect(collection.attributes).to be_a(RealSavvy::Attributes)
       expect(collection.attributes.name).to eql('Favorite Homes')
+
+      expect(collection.links).to be_a(RealSavvy::Links)
+
+      expect(collection.meta).to be_a(RealSavvy::Meta)
     end
   end
 end
