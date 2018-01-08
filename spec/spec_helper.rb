@@ -2,7 +2,7 @@ require 'bundler/setup'
 require 'pry'
 require 'real_savvy'
 require 'ostruct'
-require 'JSON'
+require 'json'
 
 
 module RealSavvyTestSupport
