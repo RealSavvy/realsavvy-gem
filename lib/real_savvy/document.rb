@@ -23,8 +23,11 @@ class RealSavvy::Document
     @data ||= self.class.process_resources(document['data'], self)
   end
 
-  alias result data
   alias results data
+
+  def result
+    data[0]
+  end
 
   def included
     @included ||= self.class.process_resources(document['included'], self)
@@ -44,6 +47,10 @@ class RealSavvy::Document
 
   def objects_lookup
     @objects_lookup ||= (data + included).each_with_object({}) { |resource, result| result[resource.hash] = resource }
+  end
+
+  def inspect
+    document.inspect
   end
 
   def self.process_resources(resources, document=nil)

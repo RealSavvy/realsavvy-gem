@@ -13,7 +13,8 @@ class RealSavvy::Client
     properties: RealSavvy::Adapter::Property,
     listings: RealSavvy::Adapter::Property,
     saved_searches: RealSavvy::Adapter::SavedSearch,
-    site: RealSavvy::Adapter::Property,
+    site: RealSavvy::Adapter::Site,
+    sites: RealSavvy::Adapter::Site,
     users: RealSavvy::Adapter::User,
     user: RealSavvy::Adapter::User,
   }.freeze

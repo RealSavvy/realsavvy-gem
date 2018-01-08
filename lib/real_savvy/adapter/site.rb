@@ -1,4 +1,4 @@
-class RealSavvy::Adapter::User < RealSavvy::Adapter::Base
+class RealSavvy::Adapter::Site < RealSavvy::Adapter::Base
   path_prefix_is 'sites'
 
   def me

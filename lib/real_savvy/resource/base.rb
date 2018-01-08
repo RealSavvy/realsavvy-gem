@@ -1,4 +1,5 @@
 require 'set'
+require 'real_savvy/attributes'
 
 class RealSavvy::Resource::Base
   attr_reader :json, :document
@@ -21,11 +22,15 @@ class RealSavvy::Resource::Base
   end
 
   def attributes
-    json['attributes']
+    @attributes || RealSavvy::Attributes.new(json['attributes'] || {})
   end
 
   def relationships
     self
+  end
+
+  def inspect
+    json.inspect
   end
 
   def self.relationships
