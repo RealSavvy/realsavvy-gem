@@ -1,5 +1,3 @@
-require 'real_savvy/client'
-
 module RealSavvy
   # From the rails Array.wrap method
   def self.safe_wrap(object)
@@ -12,3 +10,5 @@ module RealSavvy
     end
   end
 end
+
+require 'real_savvy/client'
