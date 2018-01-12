@@ -19,8 +19,9 @@ class RealSavvy::Client
     user: RealSavvy::Adapter::User,
   }.freeze
 
-  def initialize(token:, logger: nil, impersonated_user_id: nil)
+  def initialize(token:, api_url: 'https://api.realsavvy.com', logger: nil, impersonated_user_id: nil)
     @token = token
+    @api_url = api_url
     @logger = logger
     @impersonated_user_id = impersonated_user_id
   end
@@ -39,6 +40,10 @@ class RealSavvy::Client
 
   def token
     @token
+  end
+
+  def api_url
+    @api_url
   end
 
   def impersonated_user_id

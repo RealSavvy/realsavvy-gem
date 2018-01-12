@@ -2,12 +2,10 @@ require 'faraday'
 require 'faraday_middleware'
 
 class RealSavvy::Connection
-  DEFAULT_URL = 'https://api.realsavvy.com'
-
   attr_reader :faraday
 
   def initialize(client:)
-    @faraday = ::Faraday.new(DEFAULT_URL) do |faraday|
+    @faraday = ::Faraday.new(client.api_url) do |faraday|
                   faraday.request :json
                   faraday.response :json
 
