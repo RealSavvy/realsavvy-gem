@@ -12,3 +12,4 @@ module RealSavvy
 end
 
 require 'real_savvy/client'
+require 'real_savvy/jwt'

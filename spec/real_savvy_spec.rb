@@ -130,4 +130,248 @@ RSpec.describe RealSavvy do
       expect(collection.meta).to be_a(RealSavvy::Meta)
     end
   end
+
+  context 'token' do
+    it 'gives the correct verb range' do
+      expect(RealSavvy::JWT::Token.verbs_matches('public')).to eq %w{public read write admin}
+      expect(RealSavvy::JWT::Token.verbs_matches('read')).to eq  %w{read write admin}
+      expect(RealSavvy::JWT::Token.verbs_matches('write')).to eq %w{write admin}
+      expect(RealSavvy::JWT::Token.verbs_matches('admin')).to eq ['admin']
+    end
+
+    context 'scopes' do
+      before(:each) do
+        RealSavvy::JWT::Token.retrieve_audience { TestRealSavvySite.new }
+        RealSavvy::JWT::Token.retrieve_subject { TestRealSavvyUser.new }
+        RealSavvy::JWT::Token.validate_token { true }
+      end
+
+      it 'gives acccess to public all scoped actions if based verb is given as scope' do
+        scoped_token_string = RealSavvyTokenStringCreator.create('scopes' => ['public'])
+        jwt_token = RealSavvy::JWT::Token.new(scoped_token_string)
+
+        expect(jwt_token.scope_includes?('public')).to be true
+        expect(jwt_token.scope_includes?('read')).to be false
+        expect(jwt_token.scope_includes?('write')).to be false
+        expect(jwt_token.scope_includes?('admin')).to be false
+
+        expect(jwt_token.scope_includes?('leads', 'public')).to be true
+        expect(jwt_token.scope_includes?('leads', 'read')).to be false
+        expect(jwt_token.scope_includes?('leads', 'write')).to be false
+        expect(jwt_token.scope_includes?('leads', 'admin')).to be false
+      end
+
+      it 'gives acccess to read all scoped actions if based verb is given as scope' do
+        scoped_token_string = RealSavvyTokenStringCreator.create('scopes' => ['read'])
+        jwt_token = RealSavvy::JWT::Token.new(scoped_token_string)
+
+        expect(jwt_token.scope_includes?('public')).to be true
+        expect(jwt_token.scope_includes?('read')).to be true
+        expect(jwt_token.scope_includes?('write')).to be false
+        expect(jwt_token.scope_includes?('admin')).to be false
+
+        expect(jwt_token.scope_includes?('leads', 'public')).to be true
+        expect(jwt_token.scope_includes?('leads', 'read')).to be true
+        expect(jwt_token.scope_includes?('leads', 'write')).to be false
+        expect(jwt_token.scope_includes?('leads', 'admin')).to be false
+      end
+
+      it 'gives acccess to write all scoped actions if based verb is given as scope' do
+        scoped_token_string = RealSavvyTokenStringCreator.create('scopes' => ['write'])
+        jwt_token = RealSavvy::JWT::Token.new(scoped_token_string)
+
+        expect(jwt_token.scope_includes?('public')).to be true
+        expect(jwt_token.scope_includes?('read')).to be true
+        expect(jwt_token.scope_includes?('write')).to be true
+        expect(jwt_token.scope_includes?('admin')).to be false
+
+        expect(jwt_token.scope_includes?('leads', 'public')).to be true
+        expect(jwt_token.scope_includes?('leads', 'read')).to be true
+        expect(jwt_token.scope_includes?('leads', 'write')).to be true
+        expect(jwt_token.scope_includes?('leads', 'admin')).to be false
+      end
+
+      it 'gives acccess to write all scoped actions if based verb is given as scope' do
+        scoped_token_string = RealSavvyTokenStringCreator.create('scopes' => ['admin'])
+        jwt_token = RealSavvy::JWT::Token.new(scoped_token_string)
+
+        expect(jwt_token.scope_includes?('public')).to be true
+        expect(jwt_token.scope_includes?('read')).to be true
+        expect(jwt_token.scope_includes?('write')).to be true
+        expect(jwt_token.scope_includes?('admin')).to be true
+
+        expect(jwt_token.scope_includes?('leads', 'public')).to be true
+        expect(jwt_token.scope_includes?('leads', 'read')).to be true
+        expect(jwt_token.scope_includes?('leads', 'write')).to be true
+        expect(jwt_token.scope_includes?('leads', 'admin')).to be true
+      end
+
+      it 'public access to a namespace does not grant top level public access' do
+        scoped_token_string = RealSavvyTokenStringCreator.create('scopes' => ['leads:public'])
+        jwt_token = RealSavvy::JWT::Token.new(scoped_token_string)
+
+        expect(jwt_token.scope_includes?('public')).to be false
+        expect(jwt_token.scope_includes?('read')).to be false
+        expect(jwt_token.scope_includes?('write')).to be false
+        expect(jwt_token.scope_includes?('admin')).to be false
+
+        expect(jwt_token.scope_includes?('leads', 'public')).to be true
+        expect(jwt_token.scope_includes?('leads', 'read')).to be false
+        expect(jwt_token.scope_includes?('leads', 'write')).to be false
+        expect(jwt_token.scope_includes?('leads', 'admin')).to be false
+
+        expect(jwt_token.scope_includes?('users', 'public')).to be false
+        expect(jwt_token.scope_includes?('users', 'read')).to be false
+        expect(jwt_token.scope_includes?('users', 'write')).to be false
+        expect(jwt_token.scope_includes?('users', 'admin')).to be false
+      end
+
+      it 'read access to a namespace does not grant top level read access' do
+        scoped_token_string = RealSavvyTokenStringCreator.create('scopes' => ['leads:read'])
+        jwt_token = RealSavvy::JWT::Token.new(scoped_token_string)
+
+        expect(jwt_token.scope_includes?('public')).to be false
+        expect(jwt_token.scope_includes?('read')).to be false
+        expect(jwt_token.scope_includes?('write')).to be false
+        expect(jwt_token.scope_includes?('admin')).to be false
+
+        expect(jwt_token.scope_includes?('leads', 'public')).to be true
+        expect(jwt_token.scope_includes?('leads', 'read')).to be true
+        expect(jwt_token.scope_includes?('leads', 'write')).to be false
+        expect(jwt_token.scope_includes?('leads', 'admin')).to be false
+
+        expect(jwt_token.scope_includes?('users', 'public')).to be false
+        expect(jwt_token.scope_includes?('users', 'read')).to be false
+        expect(jwt_token.scope_includes?('users', 'write')).to be false
+        expect(jwt_token.scope_includes?('users', 'admin')).to be false
+      end
+
+      it 'write access to a namespace does not grant top level write access' do
+        scoped_token_string = RealSavvyTokenStringCreator.create('scopes' => ['leads:write'])
+        jwt_token = RealSavvy::JWT::Token.new(scoped_token_string)
+
+        expect(jwt_token.scope_includes?('public')).to be false
+        expect(jwt_token.scope_includes?('read')).to be false
+        expect(jwt_token.scope_includes?('write')).to be false
+        expect(jwt_token.scope_includes?('admin')).to be false
+
+        expect(jwt_token.scope_includes?('leads', 'public')).to be true
+        expect(jwt_token.scope_includes?('leads', 'read')).to be true
+        expect(jwt_token.scope_includes?('leads', 'write')).to be true
+        expect(jwt_token.scope_includes?('leads', 'admin')).to be false
+
+        expect(jwt_token.scope_includes?('users', 'public')).to be false
+        expect(jwt_token.scope_includes?('users', 'read')).to be false
+        expect(jwt_token.scope_includes?('users', 'write')).to be false
+        expect(jwt_token.scope_includes?('users', 'admin')).to be false
+      end
+
+      it 'admin access to a namespace does not grant top level admin access' do
+        scoped_token_string = RealSavvyTokenStringCreator.create('scopes' => ['leads:admin'])
+        jwt_token = RealSavvy::JWT::Token.new(scoped_token_string)
+
+        expect(jwt_token.scope_includes?('public')).to be false
+        expect(jwt_token.scope_includes?('read')).to be false
+        expect(jwt_token.scope_includes?('write')).to be false
+        expect(jwt_token.scope_includes?('admin')).to be false
+
+        expect(jwt_token.scope_includes?('leads', 'public')).to be true
+        expect(jwt_token.scope_includes?('leads', 'read')).to be true
+        expect(jwt_token.scope_includes?('leads', 'write')).to be true
+        expect(jwt_token.scope_includes?('leads', 'admin')).to be true
+
+        expect(jwt_token.scope_includes?('users', 'public')).to be false
+        expect(jwt_token.scope_includes?('users', 'read')).to be false
+        expect(jwt_token.scope_includes?('users', 'write')).to be false
+        expect(jwt_token.scope_includes?('users', 'admin')).to be false
+      end
+    end
+
+    context 'for site' do
+      before(:each) do
+        RealSavvy::JWT::Token.retrieve_audience { TestRealSavvySite.new }
+        RealSavvy::JWT::Token.retrieve_subject { TestRealSavvySite.new }
+      end
+
+      it 'can handle a valid token' do
+        RealSavvy::JWT::Token.validate_token { true }
+
+        jwt_token = RealSavvy::JWT::Token.decode(token)
+
+        expect(jwt_token.for_site?).to be true
+        expect(jwt_token.for_user?).to be false
+        expect(jwt_token.imposter?).to be false
+        expect(jwt_token.valid?).to be true
+      end
+
+      it 'can handle a none valid token' do
+        RealSavvy::JWT::Token.validate_token { false }
+
+        jwt_token = RealSavvy::JWT::Token.decode(token)
+
+        expect(jwt_token.for_site?).to be true
+        expect(jwt_token.for_user?).to be false
+        expect(jwt_token.imposter?).to be false
+        expect(jwt_token.valid?).to be false
+      end
+    end
+
+    context 'for user' do
+      before(:each) do
+        RealSavvy::JWT::Token.retrieve_audience { TestRealSavvySite.new }
+        RealSavvy::JWT::Token.retrieve_subject { TestRealSavvyUser.new }
+      end
+
+      it 'can handle a valid token' do
+        RealSavvy::JWT::Token.validate_token { true }
+
+        jwt_token = RealSavvy::JWT::Token.decode(token)
+
+        expect(jwt_token.for_site?).to be false
+        expect(jwt_token.for_user?).to be true
+        expect(jwt_token.imposter?).to be false
+        expect(jwt_token.valid?).to be true
+      end
+
+      it 'can handle a none valid token' do
+        RealSavvy::JWT::Token.validate_token { false }
+
+        jwt_token = RealSavvy::JWT::Token.decode(token)
+
+        expect(jwt_token.for_site?).to be false
+        expect(jwt_token.for_user?).to be true
+        expect(jwt_token.imposter?).to be false
+        expect(jwt_token.valid?).to be false
+      end
+    end
+
+    context 'for imposter' do
+      before(:each) do
+        RealSavvy::JWT::Token.retrieve_audience { TestRealSavvySite.new }
+        RealSavvy::JWT::Token.retrieve_subject { TestRealSavvyImposter.new }
+
+        it 'can handle a valid token' do
+          RealSavvy::JWT::Token.validate_token { true }
+
+          jwt_token = RealSavvy::JWT::Token.decode(token)
+
+          expect(jwt_token.for_site?).to be false
+          expect(jwt_token.for_user?).to be true
+          expect(jwt_token.imposter?).to be true
+          expect(jwt_token.valid?).to be true
+        end
+
+        it 'can handle a none valid token' do
+          RealSavvy::JWT::Token.validate_token { false }
+
+          jwt_token = RealSavvy::JWT::Token.decode(token)
+
+          expect(jwt_token.for_site?).to be false
+          expect(jwt_token.for_user?).to be true
+          expect(jwt_token.imposter?).to be true
+          expect(jwt_token.valid?).to be false
+        end
+      end
+    end
+  end
 end
