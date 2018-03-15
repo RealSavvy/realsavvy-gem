@@ -85,7 +85,7 @@ module RealSavvy
       end
 
       def scope_includes!(*scope_parts)
-        scope_includes?(*scope_parts) || fail(JWTUnauthorized)
+        scope_includes?(*scope_parts) || fail(::RealSavvy::JWT::Unauthorized)
       end
 
       def self.verbs_matches(verb)
@@ -98,7 +98,7 @@ module RealSavvy
       end
 
       def for_site!
-        for_site? || fail(JWTUnauthorized)
+        for_site? || fail(::RealSavvy::JWT::Unauthorized)
       end
 
       def for_user?
@@ -126,7 +126,7 @@ module RealSavvy
       end
 
       def for_user!
-        for_user? || fail(JWTUnauthorized)
+        for_user? || fail(::RealSavvy::JWT::Unauthorized)
       end
 
       def valid?
@@ -149,7 +149,7 @@ module RealSavvy
           algorithm: 'RS256',
         ).first
       rescue ::JWT::DecodeError => e
-        raise RealSavvy::JWT::BadCredentials.new(e.message)
+        raise ::RealSavvy::JWT::BadCredentials.new(e.message)
       end
 
       def retrieve_audience

@@ -132,6 +132,10 @@ RSpec.describe RealSavvy do
   end
 
   context 'token' do
+    it 'maulformed token raises error' do
+      expect{ RealSavvy::JWT::Token.decode('foobar') }.to raise_error(RealSavvy::JWT::BadCredentials)
+    end
+
     it 'gives the correct verb range' do
       expect(RealSavvy::JWT::Token.verbs_matches('public')).to eq %w{public read write admin}
       expect(RealSavvy::JWT::Token.verbs_matches('read')).to eq  %w{read write admin}
@@ -146,9 +150,15 @@ RSpec.describe RealSavvy do
         RealSavvy::JWT::Token.validate_token { true }
       end
 
+      it 'error is raised when asking for a none existing scope with bang method' do
+        scoped_token_string = RealSavvyTokenStringCreator.create('scopes' => ['public'])
+        jwt_token = RealSavvy::JWT::Token.decode(scoped_token_string)
+        expect{ jwt_token.scope_includes!('foobar') }.to raise_error(RealSavvy::JWT::Unauthorized)
+      end
+
       it 'gives acccess to public all scoped actions if based verb is given as scope' do
         scoped_token_string = RealSavvyTokenStringCreator.create('scopes' => ['public'])
-        jwt_token = RealSavvy::JWT::Token.new(scoped_token_string)
+        jwt_token = RealSavvy::JWT::Token.decode(scoped_token_string)
 
         expect(jwt_token.scope_includes?('public')).to be true
         expect(jwt_token.scope_includes?('read')).to be false
@@ -163,7 +173,7 @@ RSpec.describe RealSavvy do
 
       it 'gives acccess to read all scoped actions if based verb is given as scope' do
         scoped_token_string = RealSavvyTokenStringCreator.create('scopes' => ['read'])
-        jwt_token = RealSavvy::JWT::Token.new(scoped_token_string)
+        jwt_token = RealSavvy::JWT::Token.decode(scoped_token_string)
 
         expect(jwt_token.scope_includes?('public')).to be true
         expect(jwt_token.scope_includes?('read')).to be true
@@ -178,7 +188,7 @@ RSpec.describe RealSavvy do
 
       it 'gives acccess to write all scoped actions if based verb is given as scope' do
         scoped_token_string = RealSavvyTokenStringCreator.create('scopes' => ['write'])
-        jwt_token = RealSavvy::JWT::Token.new(scoped_token_string)
+        jwt_token = RealSavvy::JWT::Token.decode(scoped_token_string)
 
         expect(jwt_token.scope_includes?('public')).to be true
         expect(jwt_token.scope_includes?('read')).to be true
@@ -193,7 +203,7 @@ RSpec.describe RealSavvy do
 
       it 'gives acccess to write all scoped actions if based verb is given as scope' do
         scoped_token_string = RealSavvyTokenStringCreator.create('scopes' => ['admin'])
-        jwt_token = RealSavvy::JWT::Token.new(scoped_token_string)
+        jwt_token = RealSavvy::JWT::Token.decode(scoped_token_string)
 
         expect(jwt_token.scope_includes?('public')).to be true
         expect(jwt_token.scope_includes?('read')).to be true
@@ -208,7 +218,7 @@ RSpec.describe RealSavvy do
 
       it 'public access to a namespace does not grant top level public access' do
         scoped_token_string = RealSavvyTokenStringCreator.create('scopes' => ['leads:public'])
-        jwt_token = RealSavvy::JWT::Token.new(scoped_token_string)
+        jwt_token = RealSavvy::JWT::Token.decode(scoped_token_string)
 
         expect(jwt_token.scope_includes?('public')).to be false
         expect(jwt_token.scope_includes?('read')).to be false
@@ -228,7 +238,7 @@ RSpec.describe RealSavvy do
 
       it 'read access to a namespace does not grant top level read access' do
         scoped_token_string = RealSavvyTokenStringCreator.create('scopes' => ['leads:read'])
-        jwt_token = RealSavvy::JWT::Token.new(scoped_token_string)
+        jwt_token = RealSavvy::JWT::Token.decode(scoped_token_string)
 
         expect(jwt_token.scope_includes?('public')).to be false
         expect(jwt_token.scope_includes?('read')).to be false
@@ -248,7 +258,7 @@ RSpec.describe RealSavvy do
 
       it 'write access to a namespace does not grant top level write access' do
         scoped_token_string = RealSavvyTokenStringCreator.create('scopes' => ['leads:write'])
-        jwt_token = RealSavvy::JWT::Token.new(scoped_token_string)
+        jwt_token = RealSavvy::JWT::Token.decode(scoped_token_string)
 
         expect(jwt_token.scope_includes?('public')).to be false
         expect(jwt_token.scope_includes?('read')).to be false
@@ -268,7 +278,7 @@ RSpec.describe RealSavvy do
 
       it 'admin access to a namespace does not grant top level admin access' do
         scoped_token_string = RealSavvyTokenStringCreator.create('scopes' => ['leads:admin'])
-        jwt_token = RealSavvy::JWT::Token.new(scoped_token_string)
+        jwt_token = RealSavvy::JWT::Token.decode(scoped_token_string)
 
         expect(jwt_token.scope_includes?('public')).to be false
         expect(jwt_token.scope_includes?('read')).to be false
@@ -299,7 +309,9 @@ RSpec.describe RealSavvy do
         jwt_token = RealSavvy::JWT::Token.decode(token)
 
         expect(jwt_token.for_site?).to be true
+        expect(jwt_token.for_site!).to be true
         expect(jwt_token.for_user?).to be false
+        expect{ jwt_token.for_user! }.to raise_error(RealSavvy::JWT::Unauthorized)
         expect(jwt_token.imposter?).to be false
         expect(jwt_token.valid?).to be true
       end
@@ -310,7 +322,9 @@ RSpec.describe RealSavvy do
         jwt_token = RealSavvy::JWT::Token.decode(token)
 
         expect(jwt_token.for_site?).to be true
+        expect(jwt_token.for_site!).to be true
         expect(jwt_token.for_user?).to be false
+        expect{ jwt_token.for_user! }.to raise_error(RealSavvy::JWT::Unauthorized)
         expect(jwt_token.imposter?).to be false
         expect(jwt_token.valid?).to be false
       end
@@ -328,7 +342,9 @@ RSpec.describe RealSavvy do
         jwt_token = RealSavvy::JWT::Token.decode(token)
 
         expect(jwt_token.for_site?).to be false
+        expect{ jwt_token.for_site! }.to raise_error(RealSavvy::JWT::Unauthorized)
         expect(jwt_token.for_user?).to be true
+        expect(jwt_token.for_user!).to be true
         expect(jwt_token.imposter?).to be false
         expect(jwt_token.valid?).to be true
       end
@@ -339,7 +355,9 @@ RSpec.describe RealSavvy do
         jwt_token = RealSavvy::JWT::Token.decode(token)
 
         expect(jwt_token.for_site?).to be false
+        expect{ jwt_token.for_site! }.to raise_error(RealSavvy::JWT::Unauthorized)
         expect(jwt_token.for_user?).to be true
+        expect(jwt_token.for_user!).to be true
         expect(jwt_token.imposter?).to be false
         expect(jwt_token.valid?).to be false
       end
@@ -356,7 +374,9 @@ RSpec.describe RealSavvy do
           jwt_token = RealSavvy::JWT::Token.decode(token)
 
           expect(jwt_token.for_site?).to be false
+          expect{ jwt_token.for_site! }.to raise_error(RealSavvy::JWT::Unauthorized)
           expect(jwt_token.for_user?).to be true
+          expect(jwt_token.for_user!).to be true
           expect(jwt_token.imposter?).to be true
           expect(jwt_token.valid?).to be true
         end
@@ -367,7 +387,9 @@ RSpec.describe RealSavvy do
           jwt_token = RealSavvy::JWT::Token.decode(token)
 
           expect(jwt_token.for_site?).to be false
+          expect{ jwt_token.for_site! }.to raise_error(RealSavvy::JWT::Unauthorized)
           expect(jwt_token.for_user?).to be true
+          expect(jwt_token.for_user!).to be true
           expect(jwt_token.imposter?).to be true
           expect(jwt_token.valid?).to be false
         end
