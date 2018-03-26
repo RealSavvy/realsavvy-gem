@@ -143,11 +143,34 @@ RSpec.describe RealSavvy do
       expect(RealSavvy::JWT::Token.verbs_matches('admin')).to eq ['admin']
     end
 
+    context 'share token' do
+      before(:each) do
+        RealSavvy::JWT::Config.retrieve_audience { |claims| TestRealSavvySite.new(claims['aud']) }
+        RealSavvy::JWT::Config.retrieve_subject { |claims| TestRealSavvyUser.new(claims['sub']) }
+        RealSavvy::JWT::Config.validate_token { true }
+      end
+
+      it 'can down cast a signed JWT token to a share token and then to short share token' do
+        scoped_token_string = RealSavvyTokenStringCreator.create('scopes' => ['read'])
+        jwt_token = RealSavvy::JWT::Token.decode(scoped_token_string)
+
+        share_token = jwt_token.to_share_token
+
+        expect(share_token.header['alg']).to eq 'none'
+        expect(share_token.site).to eq jwt_token.site
+        expect(share_token.user).to eq jwt_token.user
+
+        expect(share_token.token).to_not eq jwt_token.token
+        expect(share_token.short_token).to_not eq share_token.token
+        expect(share_token.short_token.length).to be < share_token.token.length
+      end
+    end
+
     context 'scopes' do
       before(:each) do
-        RealSavvy::JWT::Token.retrieve_audience { TestRealSavvySite.new }
-        RealSavvy::JWT::Token.retrieve_subject { TestRealSavvyUser.new }
-        RealSavvy::JWT::Token.validate_token { true }
+        RealSavvy::JWT::Config.retrieve_audience { |claims| TestRealSavvySite.new(claims['aud']) }
+        RealSavvy::JWT::Config.retrieve_subject { |claims| TestRealSavvyUser.new(claims['sub']) }
+        RealSavvy::JWT::Config.validate_token { true }
       end
 
       it 'error is raised when asking for a none existing scope with bang method' do
@@ -299,12 +322,12 @@ RSpec.describe RealSavvy do
 
     context 'for site' do
       before(:each) do
-        RealSavvy::JWT::Token.retrieve_audience { TestRealSavvySite.new }
-        RealSavvy::JWT::Token.retrieve_subject { TestRealSavvySite.new }
+        RealSavvy::JWT::Config.retrieve_audience { |claims| TestRealSavvySite.new(claims['aud']) }
+        RealSavvy::JWT::Config.retrieve_subject { |claims| TestRealSavvySite.new(claims['sub']) }
       end
 
       it 'can handle a valid token' do
-        RealSavvy::JWT::Token.validate_token { true }
+        RealSavvy::JWT::Config.validate_token { true }
 
         jwt_token = RealSavvy::JWT::Token.decode(token)
 
@@ -317,7 +340,7 @@ RSpec.describe RealSavvy do
       end
 
       it 'can handle a none valid token' do
-        RealSavvy::JWT::Token.validate_token { false }
+        RealSavvy::JWT::Config.validate_token { false }
 
         jwt_token = RealSavvy::JWT::Token.decode(token)
 
@@ -332,12 +355,12 @@ RSpec.describe RealSavvy do
 
     context 'for user' do
       before(:each) do
-        RealSavvy::JWT::Token.retrieve_audience { TestRealSavvySite.new }
-        RealSavvy::JWT::Token.retrieve_subject { TestRealSavvyUser.new }
+        RealSavvy::JWT::Config.retrieve_audience { |claims| TestRealSavvySite.new(claims['aud']) }
+        RealSavvy::JWT::Config.retrieve_subject { |claims| TestRealSavvyUser.new(claims['sub']) }
       end
 
       it 'can handle a valid token' do
-        RealSavvy::JWT::Token.validate_token { true }
+        RealSavvy::JWT::Config.validate_token { true }
 
         jwt_token = RealSavvy::JWT::Token.decode(token)
 
@@ -350,7 +373,7 @@ RSpec.describe RealSavvy do
       end
 
       it 'can handle a none valid token' do
-        RealSavvy::JWT::Token.validate_token { false }
+        RealSavvy::JWT::Config.validate_token { false }
 
         jwt_token = RealSavvy::JWT::Token.decode(token)
 
@@ -365,11 +388,11 @@ RSpec.describe RealSavvy do
 
     context 'for imposter' do
       before(:each) do
-        RealSavvy::JWT::Token.retrieve_audience { TestRealSavvySite.new }
-        RealSavvy::JWT::Token.retrieve_subject { TestRealSavvyImposter.new }
+        RealSavvy::JWT::Config.retrieve_audience { |claims| TestRealSavvySite.new(claims['aud']) }
+        RealSavvy::JWT::Config.retrieve_subject { |claims| TestRealSavvyImposter.new(claims['sub']) }
 
         it 'can handle a valid token' do
-          RealSavvy::JWT::Token.validate_token { true }
+          RealSavvy::JWT::Config.validate_token { true }
 
           jwt_token = RealSavvy::JWT::Token.decode(token)
 
@@ -382,7 +405,7 @@ RSpec.describe RealSavvy do
         end
 
         it 'can handle a none valid token' do
-          RealSavvy::JWT::Token.validate_token { false }
+          RealSavvy::JWT::Config.validate_token { false }
 
           jwt_token = RealSavvy::JWT::Token.decode(token)
 

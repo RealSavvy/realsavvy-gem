@@ -18,22 +18,37 @@ class RealSavvyTokenStringCreator
   def self.create(payload={})
     payload = {
       "iss" => SecureRandom.hex(50),
-      "aud" => "audience",
-      "sub" => "subject"
+      "aud" => "audience-#{SecureRandom.hex(50)}",
+      "sub" => "subject-#{SecureRandom.hex(50)}"
     }.merge(payload)
     JWT.encode(payload, RealSavvyTestSupport::PRIVATE_KEY, 'RS256')
   end
 end
 
+module TestRealSavvyObject
+  attr_reader :id
+
+  def initialize(id)
+    @id = id
+  end
+
+  def ==(o)
+    o.class == self.class && o.id == id
+  end
+end
+
 class TestRealSavvyUser
+  include TestRealSavvyObject
   include RealSavvy::JWT::User
 end
 
 class TestRealSavvySite
+  include TestRealSavvyObject
   include RealSavvy::JWT::Site
 end
 
 class TestRealSavvyImposter
+  include TestRealSavvyObject
   include RealSavvy::JWT::Imposter
 
   def user
@@ -41,7 +56,7 @@ class TestRealSavvyImposter
   end
 end
 
-RealSavvy::JWT::Token.public_key = RealSavvyTestSupport::PUBLIC_KEY
+RealSavvy::JWT::Config.public_key = RealSavvyTestSupport::PUBLIC_KEY
 
 RSpec.shared_examples 'Global helpers' do |sufix|
   before(:each) do
