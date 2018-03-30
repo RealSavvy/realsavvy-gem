@@ -4,7 +4,7 @@ module RealSavvy
       # In order of access level
       SCOPE_VERBS = %w{public read write admin}.freeze
 
-      attr_reader :scopes, :user, :site, :token, :header
+      attr_reader :scopes, :user, :site, :token, :header, :claims
 
       def initialize(token)
         @token = token
@@ -98,20 +98,24 @@ module RealSavvy
         Base64.urlsafe_encode64(share_token_json, padding: false)
       end
 
+      def short_token
+        @token.split('.')[1]
+      end
+
       private
 
-      attr_reader :claims, :audience, :subject
+      attr_reader :audience, :subject
 
       def retrieve_claims
         raise NotImplementedError, "subclass did not define #retrieve_claims"
       end
 
       def retrieve_audience
-        @audience = ::RealSavvy::JWT::Config.retrieve_audience(claims) if claims
+        @audience = ::RealSavvy::JWT::Config.retrieve_audience(self) if claims && claims['aud']
       end
 
       def retrieve_subject
-        @subject = ::RealSavvy::JWT::Config.retrieve_subject(claims) if claims
+        @subject = ::RealSavvy::JWT::Config.retrieve_subject(self) if claims && claims['sub']
       end
 
       def retrieve_site

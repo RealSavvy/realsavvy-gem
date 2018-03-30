@@ -117,9 +117,9 @@ RSpec.describe RealSavvy do
       expect(document.meta).to be_a(RealSavvy::Meta)
 
       collection = document.results[0]
-      expect(collection).to be_a(RealSavvy::Resource::Collection)
+      expect(collection.type).to eql('collections')
 
-      expect(collection.relationships.user).to be_a(RealSavvy::Resource::User)
+      expect(collection.relationships.user.type).to eql('users')
       expect(collection.relationships.collaborators).to be_a(Array)
 
       expect(collection.attributes).to be_a(RealSavvy::Attributes)
@@ -145,8 +145,8 @@ RSpec.describe RealSavvy do
 
     context 'share token' do
       before(:each) do
-        RealSavvy::JWT::Config.retrieve_audience { |claims| TestRealSavvySite.new(claims['aud']) }
-        RealSavvy::JWT::Config.retrieve_subject { |claims| TestRealSavvyUser.new(claims['sub']) }
+        RealSavvy::JWT::Config.retrieve_audience { |token| TestRealSavvySite.new(token.claims['aud']) }
+        RealSavvy::JWT::Config.retrieve_subject { |token| TestRealSavvyUser.new(token.claims['sub']) }
         RealSavvy::JWT::Config.validate_token { true }
       end
 
@@ -163,13 +163,14 @@ RSpec.describe RealSavvy do
         expect(share_token.token).to_not eq jwt_token.token
         expect(share_token.short_token).to_not eq share_token.token
         expect(share_token.short_token.length).to be < share_token.token.length
+        expect(JSON.parse(Base64.urlsafe_decode64(share_token.short_token)).keys.length).to eq 2
       end
     end
 
     context 'scopes' do
       before(:each) do
-        RealSavvy::JWT::Config.retrieve_audience { |claims| TestRealSavvySite.new(claims['aud']) }
-        RealSavvy::JWT::Config.retrieve_subject { |claims| TestRealSavvyUser.new(claims['sub']) }
+        RealSavvy::JWT::Config.retrieve_audience { |token| TestRealSavvySite.new(token.claims['aud']) }
+        RealSavvy::JWT::Config.retrieve_subject { |token| TestRealSavvyUser.new(token.claims['sub']) }
         RealSavvy::JWT::Config.validate_token { true }
       end
 
@@ -322,8 +323,8 @@ RSpec.describe RealSavvy do
 
     context 'for site' do
       before(:each) do
-        RealSavvy::JWT::Config.retrieve_audience { |claims| TestRealSavvySite.new(claims['aud']) }
-        RealSavvy::JWT::Config.retrieve_subject { |claims| TestRealSavvySite.new(claims['sub']) }
+        RealSavvy::JWT::Config.retrieve_audience { |token| TestRealSavvySite.new(token.claims['aud']) }
+        RealSavvy::JWT::Config.retrieve_subject { |token| TestRealSavvySite.new(token.claims['sub']) }
       end
 
       it 'can handle a valid token' do
@@ -355,8 +356,17 @@ RSpec.describe RealSavvy do
 
     context 'for user' do
       before(:each) do
-        RealSavvy::JWT::Config.retrieve_audience { |claims| TestRealSavvySite.new(claims['aud']) }
-        RealSavvy::JWT::Config.retrieve_subject { |claims| TestRealSavvyUser.new(claims['sub']) }
+        RealSavvy::JWT::Config.retrieve_audience { |token| TestRealSavvySite.new(token.claims['aud']) }
+        RealSavvy::JWT::Config.retrieve_subject { |token| TestRealSavvyUser.new(token.claims['sub']) }
+      end
+
+      it 'short token works correctly for token' do
+        RealSavvy::JWT::Config.validate_token { true }
+
+        jwt_token = RealSavvy::JWT::Token.decode(token)
+
+        expect(jwt_token.short_token).to_not eq jwt_token.token
+        expect(jwt_token.short_token.length).to be < jwt_token.token.length
       end
 
       it 'can handle a valid token' do
@@ -388,8 +398,8 @@ RSpec.describe RealSavvy do
 
     context 'for imposter' do
       before(:each) do
-        RealSavvy::JWT::Config.retrieve_audience { |claims| TestRealSavvySite.new(claims['aud']) }
-        RealSavvy::JWT::Config.retrieve_subject { |claims| TestRealSavvyImposter.new(claims['sub']) }
+        RealSavvy::JWT::Config.retrieve_audience { |token| TestRealSavvySite.new(token.claims['aud']) }
+        RealSavvy::JWT::Config.retrieve_subject { |token| TestRealSavvyImposter.new(token.claims['sub']) }
 
         it 'can handle a valid token' do
           RealSavvy::JWT::Config.validate_token { true }

@@ -26,7 +26,7 @@ module RealSavvy
       end
 
       def validate_token
-        ::RealSavvy::JWT::Config.validate_token(token)
+        ::RealSavvy::JWT::Config.validate_token(self)
       end
     end
   end

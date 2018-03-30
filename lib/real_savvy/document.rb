@@ -5,16 +5,6 @@ class RealSavvy::Document
 
   attr_reader :document
 
-  TYPE_TO_RESOURCE = {
-    'properties' => RealSavvy::Resource::Property,
-    'listings' => RealSavvy::Resource::Property,
-    'collections' => RealSavvy::Resource::Collection,
-    'saved_searches' => RealSavvy::Resource::SavedSearch,
-    'users' => RealSavvy::Resource::User,
-  }.tap do |lookup|
-    lookup.default = RealSavvy::Resource::Base
-  end.freeze
-
   def initialize(document, status: nil)
     @document = document
     @status = status
@@ -27,7 +17,7 @@ class RealSavvy::Document
   alias results data
 
   def result
-    data[0]
+    data
   end
 
   def included
@@ -55,6 +45,10 @@ class RealSavvy::Document
   end
 
   def self.process_resources(resources, document=nil)
-    ::RealSavvy.safe_wrap(resources).map { |object| TYPE_TO_RESOURCE[object['type']].new(object, document)  }
+    if resources.is_a?(Array)
+      resources.map { |object| RealSavvy::Resource.new(object, document)  }
+    elsif resources
+      RealSavvy::Resource.new(resources, document)
+    end
   end
 end
