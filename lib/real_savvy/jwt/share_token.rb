@@ -2,10 +2,6 @@ module RealSavvy
   module JWT
     class ShareToken < AbstractToken
 
-      def short_token
-        @token.split('.')[1]
-      end
-
       private
 
       def retrieve_claims
