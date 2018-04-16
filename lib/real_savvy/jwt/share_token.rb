@@ -2,6 +2,18 @@ module RealSavvy
   module JWT
     class ShareToken < AbstractToken
 
+      def self.from_ids(audience_id:, subject_id:)
+        self.new(
+          ::JWT.encode(
+            {aud: audience_id, sub: subject_id}, nil, 'none'
+          )
+        )
+      end
+
+      def to_share_token
+        self
+      end
+
       private
 
       def retrieve_claims

@@ -17,9 +17,9 @@ end
 class RealSavvyTokenStringCreator
   def self.create(payload={})
     payload = {
-      "iss" => SecureRandom.hex(50),
-      "aud" => "audience-#{SecureRandom.hex(50)}",
-      "sub" => "subject-#{SecureRandom.hex(50)}"
+      "iss" => SecureRandom.hex(10),
+      "aud" => "gid://RealSavvy/Audience/#{SecureRandom.hex(10)}",
+      "sub" => "gid://RealSavvy/Subject/#{SecureRandom.hex(10)}",
     }.merge(payload)
     JWT.encode(payload, RealSavvyTestSupport::PRIVATE_KEY, 'RS256')
   end

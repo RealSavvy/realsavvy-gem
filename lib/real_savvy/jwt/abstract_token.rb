@@ -93,11 +93,6 @@ module RealSavvy
         @imposter ? true : false
       end
 
-      def to_share_token
-        share_token_json = Hash[claims.slice('aud','sub').map{ |key,value| [key, value.to_s.split('/')[-2,2].join('/')] }].to_json
-        Base64.urlsafe_encode64(share_token_json, padding: false)
-      end
-
       def short_token
         @token.split('.')[1]
       end
