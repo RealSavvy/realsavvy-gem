@@ -1,6 +1,16 @@
 require 'spec_helper'
 
 RSpec.describe RealSavvy do
+  it 'raise errors if configs not set' do
+    old_public_key = RealSavvy::JWT::Config.public_key
+    RealSavvy::JWT::Config.public_key = nil
+    expect{ RealSavvy::JWT::Config.public_key }.to raise_error(NotImplementedError)
+    RealSavvy::JWT::Config.public_key = old_public_key
+    expect{ RealSavvy::JWT::Config.retrieve_audience('foobar') }.to raise_error(NotImplementedError)
+    expect{ RealSavvy::JWT::Config.retrieve_subject('foobar') }.to raise_error(NotImplementedError)
+    expect{ RealSavvy::JWT::Config.validate_token('foobar') }.to raise_error(NotImplementedError)
+  end
+
   it 'can get each adapter behind a proxy form the client' do
     RealSavvy::Client::ADAPTER_LOOKUP.each do |method, adapter|
       expect(client.send(method)).to be_a(RealSavvy::Client::AdapterProxy)
