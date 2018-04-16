@@ -14,11 +14,11 @@ module RealSavvy
         @public_key = value
       end
 
-      def self.retrieve_audience claims = nil
+      def self.retrieve_audience token = nil
         if block_given?
           @retrieve_audience = Proc.new
         else
-          @retrieve_audience.call(claims)
+          @retrieve_audience.call(token)
         end
       end
 
@@ -26,11 +26,11 @@ module RealSavvy
         @retrieve_audience = value
       end
 
-      def self.retrieve_subject claims = nil
+      def self.retrieve_subject token = nil
         if block_given?
           @retrieve_subject = Proc.new
         else
-          @retrieve_subject.call(claims)
+          @retrieve_subject.call(token)
         end
       end
 
