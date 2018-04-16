@@ -5,6 +5,7 @@ module RealSavvy
         if block_given?
           @public_key = Proc.new
         else
+          raise NotImplementedError, "public_key not provided" unless @public_key
           result = @public_key.is_a?(Proc) ? @public_key.call : @public_key
           result.is_a?(OpenSSL::PKey::RSA) ? result : OpenSSL::PKey::RSA.new(result)
         end
@@ -18,6 +19,7 @@ module RealSavvy
         if block_given?
           @retrieve_audience = Proc.new
         else
+          raise NotImplementedError, "retrieve_audience logic not implemeted" unless @retrieve_audience
           @retrieve_audience.call(token)
         end
       end
@@ -30,6 +32,7 @@ module RealSavvy
         if block_given?
           @retrieve_subject = Proc.new
         else
+          raise NotImplementedError, "retrieve_subject logic not implemeted" unless @retrieve_subject
           @retrieve_subject.call(token)
         end
       end
@@ -42,6 +45,7 @@ module RealSavvy
         if block_given?
           @validate_token = Proc.new
         else
+          raise NotImplementedError, "validate_token logic not implemeted" unless @validate_token
           @validate_token.call(token)
         end
       end
