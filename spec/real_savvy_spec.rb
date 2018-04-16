@@ -165,6 +165,17 @@ RSpec.describe RealSavvy do
         expect(share_token.short_token.length).to be < share_token.token.length
         expect(JSON.parse(Base64.urlsafe_decode64(share_token.short_token)).keys.length).to eq 2
       end
+
+      it 'can build share token just from aud and sub' do
+        scoped_token_string = RealSavvyTokenStringCreator.create('scopes' => ['read'])
+        jwt_token_from_full_token = RealSavvy::JWT::Token.decode(scoped_token_string).to_share_token
+        share_token_from_full_token = jwt_token_from_full_token.short_token
+
+        jwt_token_from_ids = RealSavvy::JWT::ShareToken.from_ids(subject_id: jwt_token_from_full_token.claims['sub'], audience_id: jwt_token_from_full_token.claims['aud'])
+        share_token_from_ids = jwt_token_from_ids.short_token
+
+        expect(share_token_from_ids).to eq share_token_from_full_token
+      end
     end
 
     context 'scopes' do
