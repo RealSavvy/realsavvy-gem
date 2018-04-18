@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    real_savvy (0.0.9)
+    real_savvy (0.0.10)
       faraday (>= 0.8.0)
       faraday_middleware (>= 0.8.0)
       jwt (>= 1.0.0)
