@@ -126,7 +126,26 @@ RSpec.describe RealSavvy do
       document = client.collections.index
       expect(document.meta).to be_a(RealSavvy::Meta)
 
-      collection = document.results[0]
+      collection = document.data[0]
+      expect(collection.type).to eql('collections')
+
+      expect(collection.relationships.user.type).to eql('users')
+      expect(collection.relationships.collaborators).to be_a(Array)
+
+      expect(collection.attributes).to be_a(RealSavvy::Attributes)
+      expect(collection.attributes.name).to eql('Favorite Homes')
+
+      expect(collection.links).to be_a(RealSavvy::Links)
+
+      expect(collection.meta).to be_a(RealSavvy::Meta)
+    end
+
+    it 'are structed correctly if only one data object' do
+      allow_any_instance_of(RealSavvy::Connection).to receive(:delegate).and_return(singular_response)
+      document = client.collections.index
+      expect(document.meta).to be_a(RealSavvy::Meta)
+
+      collection = document.data
       expect(collection.type).to eql('collections')
 
       expect(collection.relationships.user.type).to eql('users')

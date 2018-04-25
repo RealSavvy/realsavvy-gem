@@ -37,7 +37,7 @@ class RealSavvy::Document
   end
 
   def objects_lookup
-    @objects_lookup ||= (data + included).each_with_object({}) { |resource, result| result[resource.hash] = resource }
+    @objects_lookup ||= [*data, *included].compact.each_with_object({}) { |resource, result| result[resource.hash] = resource }
   end
 
   def inspect

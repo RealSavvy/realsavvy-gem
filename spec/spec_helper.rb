@@ -10,6 +10,7 @@ require 'openssl'
 module RealSavvyTestSupport
   COMPLEX_ID = 'north_texas_real_estate_information_systems~72621119'.freeze
   EXAMPLE_FILE = File.read(File.dirname(__FILE__) + '/fixtures/jsonapi.json').freeze
+  EXAMPLE_SINGLE_FILE = File.read(File.dirname(__FILE__) + '/fixtures/jsonapi_single_data.json').freeze
   PRIVATE_KEY = OpenSSL::PKey::RSA.new(2048)
   PUBLIC_KEY = PRIVATE_KEY.public_key
 end
@@ -71,6 +72,13 @@ RSpec.shared_examples 'Global helpers' do |sufix|
     OpenStruct.new(
       status: 200,
       body: JSON.parse(RealSavvyTestSupport::EXAMPLE_FILE)
+    )
+  end
+
+  let(:singular_response) do
+    OpenStruct.new(
+      status: 200,
+      body: JSON.parse(RealSavvyTestSupport::EXAMPLE_SINGLE_FILE)
     )
   end
 
