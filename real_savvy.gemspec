@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency 'faraday', ">= 0.8.0"
   spec.add_runtime_dependency 'faraday_middleware', ">= 0.8.0"
-  spec.add_runtime_dependency 'jwt', ">= 1.0.0"
+  spec.add_runtime_dependency 'jwt', ">= 1.5"
 
   spec.add_development_dependency "bundler", "~> 1.14"
   spec.add_development_dependency "rake", "~> 10.0"
