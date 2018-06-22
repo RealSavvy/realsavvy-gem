@@ -11,7 +11,7 @@ class RealSavvy::Resource
   end
 
   def hash
-    {id: id, type: type}.to_json.hash
+    {id: id.to_s, type: type}.to_json.hash
   end
 
   def id
