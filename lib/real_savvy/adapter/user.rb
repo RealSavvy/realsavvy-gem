@@ -10,4 +10,8 @@ class RealSavvy::Adapter::User < RealSavvy::Adapter::Base
   def me
     get("./api/v3/#{path_prefix}/me")
   end
+
+  def magic_link(id)
+    post("./api/v3/#{path_prefix}/#{id}/magic_link")
+  end
 end
