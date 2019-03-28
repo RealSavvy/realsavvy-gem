@@ -14,4 +14,12 @@ class RealSavvy::Adapter::User < RealSavvy::Adapter::Base
   def magic_link(id)
     post("./api/v3/#{path_prefix}/#{id}/magic_link")
   end
+
+  def add_role(id:, role:)
+    post("./api/v3/#{path_prefix}/#{id}/roles", role: role)
+  end
+
+  def remove_role(id:, role:)
+    delete("./api/v3/#{path_prefix}/#{id}/roles", role: role)
+  end
 end
